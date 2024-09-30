@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "telegram-tag-bot"
+version = "0.1.0"
+description = ""
+authors = ["Nikita Pozdnyakov <n.pozdnyakov@orbis3.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytelegrambotapi = "^4.23.0"
+sqlalchemy = "^2.0.35"
+alembic = "^1.13.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
