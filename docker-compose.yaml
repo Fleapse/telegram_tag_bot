@@ -1,5 +1,6 @@
 services:
   web:
     build: .
+    restart: always
     volumes:
       - ./db:/opt/app/db

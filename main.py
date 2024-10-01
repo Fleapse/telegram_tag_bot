@@ -25,7 +25,7 @@ class UserGroupAssociation(Base):
 
 @bot.message_handler(commands=['help'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'бот для тега групп людей\nкомманды:\n/add_group, /remove_group, /my_groups, /ping')
+    bot.send_message(message.chat.id, 'бот для тега групп людей\nкомманды:\n/add_group, /remove_group, /my_groups, /ping, /remove_all_groups')
 
 
 @bot.message_handler(commands=['add_group'])
@@ -65,6 +65,19 @@ def add_me_to_group_message(message):
         session.commit()
 
     bot.send_message(message.chat.id, f'Вы были добавленны в группу {command}')
+
+
+@bot.message_handler(commands=['remove_all_groups'])
+def remove_me_from_all_groups_message(message):
+    with Session(engine) as session:
+        stmt = delete(UserGroupAssociation).where(
+            UserGroupAssociation.chat_id == message.chat.id,
+            UserGroupAssociation.user_id == message.from_user.id,
+        )
+        session.execute(stmt)
+        session.commit()
+
+    bot.send_message(message.chat.id, 'Вы были удалены из всех групп')
 
 
 @bot.message_handler(commands=['remove_group'])
@@ -140,7 +153,7 @@ def ping_message(message):
     with Session(engine) as session:
         stmt = select(UserGroupAssociation).where(
             UserGroupAssociation.chat_id == message.chat.id,
-            UserGroupAssociation.group_name == command
+            UserGroupAssociation.group_name.ilike(command),
         )
         result = session.execute(stmt)
         user_group_association = result.scalars().all()
