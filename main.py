@@ -23,12 +23,19 @@ class UserGroupAssociation(Base):
 # cursor = conn.cursor()
 
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help', 'h'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'бот для тега групп людей\nкомманды:\n/add_group, /remove_group, /my_groups, /ping, /remove_all_groups')
+    bot.send_message(
+        message.chat.id,
+        'бот для тега групп людей\nкомманды:\n'
+        '/add_group or /a, /remove_group or /r, /my_groups or /m,'
+        ' /ping or /p, /remove_all_groups or /ra\n'
+        'для того, что бы тегнуть калорантеров - /v or /valorant\n'
+        'для доты - /d or /dota',
+    )
 
 
-@bot.message_handler(commands=['add_group'])
+@bot.message_handler(commands=['add_group', 'a'])
 def add_me_to_group_message(message):
     commands = message.text.strip().split(maxsplit=1)
     if len(commands) == 1:
@@ -67,7 +74,7 @@ def add_me_to_group_message(message):
     bot.send_message(message.chat.id, f'Вы были добавленны в группу {command}')
 
 
-@bot.message_handler(commands=['remove_all_groups'])
+@bot.message_handler(commands=['remove_all_groups', 'ra'])
 def remove_me_from_all_groups_message(message):
     with Session(engine) as session:
         stmt = delete(UserGroupAssociation).where(
@@ -80,7 +87,7 @@ def remove_me_from_all_groups_message(message):
     bot.send_message(message.chat.id, 'Вы были удалены из всех групп')
 
 
-@bot.message_handler(commands=['remove_group'])
+@bot.message_handler(commands=['remove_group', 'r'])
 def remove_me_from_group_message(message):
     commands = message.text.strip().split(maxsplit=1)
     if len(commands) == 1:
@@ -118,7 +125,7 @@ def remove_me_from_group_message(message):
     bot.send_message(message.chat.id, f'Вы были удалены из группы {command}')
 
 
-@bot.message_handler(commands=['my_groups'])
+@bot.message_handler(commands=['my_groups', 'm'])
 def show_my_groups_message(message):
     with Session(engine) as session:
         stmt = select(UserGroupAssociation).where(
@@ -137,7 +144,7 @@ def show_my_groups_message(message):
     bot.send_message(message.chat.id, 'Вы не состоите ни в одной группе')
 
 
-@bot.message_handler(commands=['ping'])
+@bot.message_handler(commands=['ping', 'p'])
 def ping_message(message):
     commands = message.text.strip().split(maxsplit=1)
     if len(commands) == 1:
@@ -150,6 +157,47 @@ def ping_message(message):
     if ' ' in command:
         bot.send_message(message.chat.id, 'группа должна быть одним словом')
         return
+    with Session(engine) as session:
+        stmt = select(UserGroupAssociation).where(
+            UserGroupAssociation.chat_id == message.chat.id,
+            UserGroupAssociation.group_name.ilike(command),
+        )
+        result = session.execute(stmt)
+        user_group_association = result.scalars().all()
+        if user_group_association:
+            user_tags = [f"@{x.username}" for x in user_group_association]
+            bot.send_message(
+                message.chat.id,
+                ', '.join(user_tags),
+            )
+            return
+    bot.send_message(message.chat.id, 'В такой группе нет людей')
+
+
+@bot.message_handler(commands=['valorant', 'v'])
+def valorant_message(message):
+
+    command = 'valorant'
+    with Session(engine) as session:
+        stmt = select(UserGroupAssociation).where(
+            UserGroupAssociation.chat_id == message.chat.id,
+            UserGroupAssociation.group_name.ilike(command),
+        )
+        result = session.execute(stmt)
+        user_group_association = result.scalars().all()
+        if user_group_association:
+            user_tags = [f"@{x.username}" for x in user_group_association]
+            bot.send_message(
+                message.chat.id,
+                ', '.join(user_tags),
+            )
+            return
+    bot.send_message(message.chat.id, 'В такой группе нет людей')
+
+
+@bot.message_handler(commands=['dota', 'd'])
+def dota_message(message):
+    command = 'dota'
     with Session(engine) as session:
         stmt = select(UserGroupAssociation).where(
             UserGroupAssociation.chat_id == message.chat.id,
