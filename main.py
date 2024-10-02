@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import Column, Integer, String, create_engine, delete, insert, select
 from sqlalchemy.orm import declarative_base, Session
 import telebot
@@ -8,6 +9,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 engine = create_engine("sqlite:///db/database.db")
 Base = declarative_base()
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+logger = telebot.logger
+telebot.logger.setLevel(logging.INFO)
 
 
 class UserGroupAssociation(Base):
@@ -216,4 +221,4 @@ def dota_message(message):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    bot.infinity_polling(skip_pending=True, logger_level=logging.INFO)
