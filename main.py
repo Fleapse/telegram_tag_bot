@@ -9,7 +9,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 engine = create_engine("sqlite:///db/database.db")
 Base = declarative_base()
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.INFO)
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
