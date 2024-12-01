@@ -28,6 +28,24 @@ class UserGroupAssociation(Base):
 # cursor = conn.cursor()
 
 
+def ping_group(ping_sender: str, ping_group: str, chat_id):
+    with Session(engine) as session:
+        stmt = select(UserGroupAssociation).where(
+            UserGroupAssociation.chat_id == chat_id,
+            UserGroupAssociation.group_name.ilike(ping_group),
+        )
+        result = session.execute(stmt)
+        user_group_association = result.scalars().all()
+        if user_group_association:
+            user_tags = [f"@{x.username}" for x in user_group_association]
+            bot.send_message(
+                chat_id,
+                f"{ping_sender} пингует группу {ping_group}\n{', '.join(user_tags)}",
+            )
+            return
+    bot.send_message(chat_id, 'В такой группе нет людей')
+
+
 @bot.message_handler(commands=['help', 'h'])
 def start_message(message):
     bot.send_message(
@@ -162,62 +180,22 @@ def ping_message(message):
     if ' ' in command:
         bot.send_message(message.chat.id, 'группа должна быть одним словом')
         return
-    with Session(engine) as session:
-        stmt = select(UserGroupAssociation).where(
-            UserGroupAssociation.chat_id == message.chat.id,
-            UserGroupAssociation.group_name.ilike(command),
-        )
-        result = session.execute(stmt)
-        user_group_association = result.scalars().all()
-        if user_group_association:
-            user_tags = [f"@{x.username}" for x in user_group_association]
-            bot.send_message(
-                message.chat.id,
-                ', '.join(user_tags),
-            )
-            return
-    bot.send_message(message.chat.id, 'В такой группе нет людей')
+    sender = message.from_user.username or "чел без ника"
+    ping_group(chat_id=message.chat.id, ping_group=command, ping_sender=sender)
 
 
 @bot.message_handler(commands=['valorant', 'v'])
 def valorant_message(message):
-
     command = 'valorant'
-    with Session(engine) as session:
-        stmt = select(UserGroupAssociation).where(
-            UserGroupAssociation.chat_id == message.chat.id,
-            UserGroupAssociation.group_name.ilike(command),
-        )
-        result = session.execute(stmt)
-        user_group_association = result.scalars().all()
-        if user_group_association:
-            user_tags = [f"@{x.username}" for x in user_group_association]
-            bot.send_message(
-                message.chat.id,
-                ', '.join(user_tags),
-            )
-            return
-    bot.send_message(message.chat.id, 'В такой группе нет людей')
+    sender = message.from_user.username or "чел без ника"
+    ping_group(chat_id=message.chat.id, ping_group=command, ping_sender=sender)
 
 
 @bot.message_handler(commands=['dota', 'd'])
 def dota_message(message):
     command = 'dota'
-    with Session(engine) as session:
-        stmt = select(UserGroupAssociation).where(
-            UserGroupAssociation.chat_id == message.chat.id,
-            UserGroupAssociation.group_name.ilike(command),
-        )
-        result = session.execute(stmt)
-        user_group_association = result.scalars().all()
-        if user_group_association:
-            user_tags = [f"@{x.username}" for x in user_group_association]
-            bot.send_message(
-                message.chat.id,
-                ', '.join(user_tags),
-            )
-            return
-    bot.send_message(message.chat.id, 'В такой группе нет людей')
+    sender = message.from_user.username or "чел без ника"
+    ping_group(chat_id=message.chat.id, ping_group=command, ping_sender=sender)
 
 
 if __name__ == '__main__':
