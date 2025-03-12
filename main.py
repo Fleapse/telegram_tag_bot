@@ -198,5 +198,12 @@ def dota_message(message):
     ping_group(chat_id=message.chat.id, ping_group=command, ping_sender=sender)
 
 
+@bot.message_handler(commands=['сs'])
+def cs_message(message):
+    command = 'cs'
+    sender = message.from_user.username or "чел без ника"
+    ping_group(chat_id=message.chat.id, ping_group=command, ping_sender=sender)
+
+
 if __name__ == '__main__':
     bot.infinity_polling(skip_pending=True, logger_level=logging.INFO)
